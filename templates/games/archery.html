@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+
+{% block title %}Virtual Archery - QuantumGaze{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <a href="{{ games_url }}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Games
+        </a>
+        <h1 class="game-title">Virtual Archery</h1>
+        <p class="game-description">Test your aim with gesture-controlled archery!</p>
+    </div>
+
+    <div class="game-area">
+        <div class="game-canvas-container">
+            <canvas id="archeryCanvas"></canvas>
+            <div class="camera-preview">
+                <video id="camera-feed" autoplay muted></video>
+                <div class="gesture-debug" id="debug-info"></div>
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <div class="score-display">
+                <div class="score-item">
+                    <span class="score-label">Score</span>
+                    <span class="score-value" id="currentScore">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Arrows</span>
+                    <span class="score-value" id="arrowsLeft">10</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="start-game" class="control-button">
+                    <i class="fas fa-play"></i>
+                    Start Game
+                </button>
+                <button id="toggle-debug" class="control-button">
+                    <i class="fas fa-bug"></i>
+                    Toggle Debug
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-stats">
+        <div class="stat-panel">
+            <h3>Game Stats</h3>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Games Played</span>
+                    <span class="stat-value" id="gamesPlayed">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Best Score</span>
+                    <span class="stat-value" id="bestScore">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg. Accuracy</span>
+                    <span class="stat-value" id="avgAccuracy">0%</span>
+                </div>
+            </div>
+        </div>
+        <div class="instructions-panel">
+            <h3>How to Play</h3>
+            <ul>
+                <li>🎯 Use your left hand to aim the bow</li>
+                <li>🏹 Pull back your right hand to draw the arrow</li>
+                <li>👋 Release your right hand to shoot</li>
+                <li>💯 Score points based on target accuracy</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .game-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .back-button {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .back-button:hover {
+        color: var(--text-light);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(-4px);
+    }
+
+    .game-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        background: var(--text-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .game-description {
+        font-size: 20px;
+        color: var(--text-muted);
+    }
+
+    .game-area {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 40px;
+        margin-bottom: 40px;
+    }
+
+    .game-canvas-container {
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 24px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    #archeryCanvas {
+        width: 100%;
+        height: 400px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+    }
+
+    .camera-preview {
+        width: 320px;
+        height: 240px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        margin: 0 auto;
+    }
+
+    #camera-feed {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .gesture-debug {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: #4ecca3;
+        padding: 8px;
+        font-family: monospace;
+        font-size: 12px;
+        display: none;
+    }
+
+    .game-controls {
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 24px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .score-display {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 30px;
+    }
+
+    .score-item {
+        text-align: center;
+    }
+
+    .score-label {
+        display: block;
+        color: var(--text-muted);
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .score-value {
+        font-size: 48px;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .controls {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .control-button {
+        padding: 12px 24px;
+        border-radius: 50px;
+        border: none;
+        background: var(--primary-gradient);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .control-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .game-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+
+    .stat-panel, .instructions-panel {
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 24px;
+        padding: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-panel h3, .instructions-panel h3 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: var(--text-light);
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-label {
+        display: block;
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-light);
+    }
+
+    .instructions-panel ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .instructions-panel li {
+        margin-bottom: 15px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 16px;
+    }
+
+    @media (max-width: 1024px) {
+        .game-area {
+            grid-template-columns: 1fr;
+        }
+
+        .game-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .game-title {
+            font-size: 36px;
+        }
+
+        .camera-preview {
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .stat-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    class ArcheryGame {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            
+            this.arrowsLeft = 10;
+            this.currentScore = 0;
+            this.isRunning = false;
+            this.isDrawing = false;
+            
+            this.bowPosition = { x: 100, y: 200 };
+            this.targetPosition = { x: 700, y: 200 };
+            this.arrowPosition = { ...this.bowPosition };
+            this.drawStrength = 0;
+            
+            this.setupCanvas();
+        }
+        
+        setupCanvas() {
+            this.canvas.width = this.canvas.offsetWidth;
+            this.canvas.height = this.canvas.offsetHeight;
+        }
+        
+        update(leftHand, rightHand) {
+            if (!this.isRunning || !leftHand || !rightHand) return;
+            
+            // Update bow position based on left hand
+            this.bowPosition.y = leftHand.y * this.canvas.height;
+            
+            // Calculate draw strength based on right hand position
+            const drawDistance = Math.abs(rightHand.x - leftHand.x);
+            this.drawStrength = Math.min(1, drawDistance);
+            
+            // Check if arrow is being drawn
+            if (drawDistance > 0.2) {
+                this.isDrawing = true;
+                this.arrowPosition = { ...this.bowPosition };
+            } else if (this.isDrawing) {
+                this.shootArrow();
+            }
+            
+            // Update arrow position if in flight
+            if (this.arrow) {
+                this.arrow.x += this.arrow.dx;
+                this.arrow.y += this.arrow.dy;
+                
+                // Check for target hit
+                if (this.checkTargetHit()) {
+                    this.calculateScore();
+                    this.arrow = null;
+                    this.arrowsLeft--;
+                    
+                    if (this.arrowsLeft <= 0) {
+                        this.gameOver();
+                    }
+                }
+                
+                // Check if arrow is out of bounds
+                if (this.arrow && (this.arrow.x > this.canvas.width || 
+                    this.arrow.y < 0 || this.arrow.y > this.canvas.height)) {
+                    this.arrow = null;
+                    this.arrowsLeft--;
+                    
+                    if (this.arrowsLeft <= 0) {
+                        this.gameOver();
+                    }
+                }
+            }
+        }
+        
+        shootArrow() {
+            this.isDrawing = false;
+            
+            // Calculate arrow velocity based on draw strength
+            const angle = Math.atan2(
+                this.targetPosition.y - this.bowPosition.y,
+                this.targetPosition.x - this.bowPosition.x
+            );
+            
+            const speed = 15 * this.drawStrength;
+            
+            this.arrow = {
+                x: this.bowPosition.x,
+                y: this.bowPosition.y,
+                dx: Math.cos(angle) * speed,
+                dy: Math.sin(angle) * speed
+            };
+        }
+        
+        checkTargetHit() {
+            if (!this.arrow) return false;
+            
+            const distance = Math.sqrt(
+                Math.pow(this.arrow.x - this.targetPosition.x, 2) +
+                Math.pow(this.arrow.y - this.targetPosition.y, 2)
+            );
+            
+            return distance < 50;
+        }
+        
+        calculateScore() {
+            const distance = Math.sqrt(
+                Math.pow(this.arrow.x - this.targetPosition.x, 2) +
+                Math.pow(this.arrow.y - this.targetPosition.y, 2)
+            );
+            
+            // Score based on distance from target center
+            let points = Math.max(0, Math.floor(100 - distance));
+            this.currentScore += points;
+            
+            document.getElementById('currentScore').textContent = this.currentScore;
+            document.getElementById('arrowsLeft').textContent = this.arrowsLeft;
+        }
+        
+        draw() {
+            // Clear canvas
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw target
+            this.drawTarget();
+            
+            // Draw bow
+            this.drawBow();
+            
+            // Draw arrow in flight
+            if (this.arrow) {
+                this.drawArrow(this.arrow.x, this.arrow.y);
+            }
+        }
+        
+        drawTarget() {
+            const { x, y } = this.targetPosition;
+            const colors = ['#ff0000', '#ffffff', '#ff0000', '#ffffff', '#ff0000'];
+            
+            for (let i = 4; i >= 0; i--) {
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 10 * (i + 1), 0, Math.PI * 2);
+                this.ctx.fillStyle = colors[i];
+                this.ctx.fill();
+            }
+        }
+        
+        drawBow() {
+            const { x, y } = this.bowPosition;
+            
+            // Draw bow
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, 30, -Math.PI/2, Math.PI/2);
+            this.ctx.strokeStyle = '#8b5cf6';
+            this.ctx.lineWidth = 3;
+            this.ctx.stroke();
+            
+            // Draw bowstring
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, y - 30);
+            this.ctx.lineTo(x - 20 * this.drawStrength, y);
+            this.ctx.lineTo(x, y + 30);
+            this.ctx.strokeStyle = '#ffffff';
+            this.ctx.lineWidth = 1;
+            this.ctx.stroke();
+            
+            // Draw arrow if drawing
+            if (this.isDrawing) {
+                this.drawArrow(x - 20 * this.drawStrength, y);
+            }
+        }
+        
+        drawArrow(x, y) {
+            this.ctx.save();
+            
+            // Rotate arrow based on velocity if in flight
+            if (this.arrow) {
+                const angle = Math.atan2(this.arrow.dy, this.arrow.dx);
+                this.ctx.translate(x, y);
+                this.ctx.rotate(angle);
+                this.ctx.translate(-x, -y);
+            }
+            
+            // Draw arrow shaft
+            this.ctx.beginPath();
+            this.ctx.moveTo(x - 20, y);
+            this.ctx.lineTo(x + 20, y);
+            this.ctx.strokeStyle = '#ffd700';
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+            
+            // Draw arrowhead
+            this.ctx.beginPath();
+            this.ctx.moveTo(x + 20, y);
+            this.ctx.lineTo(x + 15, y - 5);
+            this.ctx.lineTo(x + 25, y);
+            this.ctx.lineTo(x + 15, y + 5);
+            this.ctx.closePath();
+            this.ctx.fillStyle = '#ffd700';
+            this.ctx.fill();
+            
+            // Draw fletching
+            this.ctx.beginPath();
+            this.ctx.moveTo(x - 15, y);
+            this.ctx.lineTo(x - 20, y - 5);
+            this.ctx.lineTo(x - 10, y);
+            this.ctx.closePath();
+            this.ctx.fillStyle = '#ff0000';
+            this.ctx.fill();
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(x - 15, y);
+            this.ctx.lineTo(x - 20, y + 5);
+            this.ctx.lineTo(x - 10, y);
+            this.ctx.closePath();
+            this.ctx.fillStyle = '#ff0000';
+            this.ctx.fill();
+            
+            this.ctx.restore();
+        }
+        
+        start() {
+            this.isRunning = true;
+            this.currentScore = 0;
+            this.arrowsLeft = 10;
+            this.arrow = null;
+            
+            document.getElementById('currentScore').textContent = this.currentScore;
+            document.getElementById('arrowsLeft').textContent = this.arrowsLeft;
+        }
+        
+        stop() {
+            this.isRunning = false;
+        }
+        
+        gameOver() {
+            this.stop();
+            
+            const gamesPlayed = parseInt(localStorage.getItem('archeryGamesPlayed') || '0') + 1;
+            const totalScore = parseInt(localStorage.getItem('archeryTotalScore') || '0') + this.currentScore;
+            const bestScore = Math.max(parseInt(localStorage.getItem('archeryBestScore') || '0'), this.currentScore);
+            
+            localStorage.setItem('archeryGamesPlayed', gamesPlayed);
+            localStorage.setItem('archeryTotalScore', totalScore);
+            localStorage.setItem('archeryBestScore', bestScore);
+            
+            this.updateStats();
+        }
+        
+        updateStats() {
+            const gamesPlayed = parseInt(localStorage.getItem('archeryGamesPlayed') || '0');
+            const totalScore = parseInt(localStorage.getItem('archeryTotalScore') || '0');
+            const bestScore = parseInt(localStorage.getItem('archeryBestScore') || '0');
+            
+            document.getElementById('gamesPlayed').textContent = gamesPlayed;
+            document.getElementById('bestScore').textContent = bestScore;
+            document.getElementById('avgAccuracy').textContent = 
+                gamesPlayed > 0 ? Math.round((totalScore / (gamesPlayed * 1000)) * 100) + '%' : '0%';
+        }
+    }
+
+    // Initialize game
+    document.addEventListener('DOMContentLoaded', async () => {
+        const canvas = document.getElementById('archeryCanvas');
+        const game = new ArcheryGame(canvas);
+        let debugMode = false;
+
+        // Setup camera
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('camera-feed').srcObject = stream;
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+        }
+
+        // Connect to WebSocket for hand tracking
+        const ws = new WebSocket(`ws://${window.location.host}/gesture_stream/archery`);
+        
+        ws.onmessage = (event) => {
+            if (!game.isRunning) return;
+            
+            const data = JSON.parse(event.data);
+            if (debugMode) {
+                document.getElementById('debug-info').textContent = JSON.stringify(data, null, 2);
+            }
+
+            if (data.left_hand && data.right_hand) {
+                game.update(data.left_hand, data.right_hand);
+            }
+        };
+
+        // Game loop
+        function gameLoop() {
+            game.draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+
+        // Event listeners
+        document.getElementById('start-game').addEventListener('click', () => {
+            if (game.isRunning) {
+                game.stop();
+                document.getElementById('start-game').innerHTML = '<i class="fas fa-play"></i> Start Game';
+            } else {
+                game.start();
+                document.getElementById('start-game').innerHTML = '<i class="fas fa-stop"></i> Stop Game';
+            }
+        });
+
+        document.getElementById('toggle-debug').addEventListener('click', () => {
+            debugMode = !debugMode;
+            document.getElementById('debug-info').style.display = debugMode ? 'block' : 'none';
+        });
+
+        // Load initial stats
+        game.updateStats();
+    });
+</script>
+{% endblock %} 

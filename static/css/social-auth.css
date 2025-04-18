@@ -1,0 +1,88 @@
+.social-auth-container {
+    margin-top: 2rem;
+}
+
+.social-auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.social-auth-divider::before,
+.social-auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.social-auth-divider span {
+    padding: 0 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.social-auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.social-auth-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.social-auth-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.social-auth-button img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.social-auth-button.google {
+    background: #ffffff;
+    color: #000000;
+}
+
+.social-auth-button.facebook {
+    background: #1877f2;
+    color: #ffffff;
+    border: none;
+}
+
+.social-auth-button.apple {
+    background: #000000;
+    color: #ffffff;
+    border: none;
+}
+
+.social-auth-button.phone {
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.social-auth-button.phone i {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

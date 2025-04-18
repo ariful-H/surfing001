@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}Rock Paper Scissors - QuantumGaze{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <a href="{{ games_url }}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Games
+        </a>
+        <h1 class="game-title">Rock Paper Scissors</h1>
+        <p class="game-description">Play against AI using hand gestures!</p>
+    </div>
+
+    <div class="game-area">
+        <div class="player-side">
+            <h2>You</h2>
+            <div class="score" id="player-score">0</div>
+            <div class="gesture-display" id="player-gesture">
+                <div class="gesture-icon">✋</div>
+                <div class="gesture-label">Waiting...</div>
+            </div>
+            <div class="camera-preview">
+                <video id="camera-feed" autoplay playsinline muted></video>
+                <canvas id="gesture-canvas"></canvas>
+                <div class="camera-overlay">
+                    <div class="camera-status">
+                        <div class="loading-spinner"></div>
+                        <span>Initializing camera...</span>
+                    </div>
+                </div>
+                <div class="gesture-debug" id="debug-info">
+                    <div class="debug-hand">Hand: Not detected</div>
+                    <div class="debug-fingers">Fingers: 0</div>
+                    <div class="debug-gesture">Gesture: None</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-status">
+            <div class="round-result" id="round-result">Show your gesture to play!</div>
+        </div>
+
+        <div class="ai-side">
+            <h2>AI</h2>
+            <div class="score" id="ai-score">0</div>
+            <div class="gesture-display" id="ai-gesture">
+                <div class="gesture-icon">🤖</div>
+                <div class="gesture-label">Waiting...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-info">
+        <div class="instructions">
+            <h3>How to Play</h3>
+            <ul>
+                <li>✊ Make a fist for "Rock"</li>
+                <li>✋ Show your palm for "Paper"</li>
+                <li>✌️ Show victory sign for "Scissors"</li>
+            </ul>
+            <div class="gesture-tips">
+                <h4>Tips for Better Detection:</h4>
+                <ul>
+                    <li>Keep your hand in view of the camera</li>
+                    <li>Make clear, distinct gestures</li>
+                    <li>Ensure good lighting conditions</li>
+                    <li>Keep your hand steady while making gestures</li>
+                </ul>
+            </div>
+        </div>
+        <div class="stats">
+            <h3>Game Stats</h3>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Games Played</span>
+                    <span class="stat-value" id="games-played">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Win Rate</span>
+                    <span class="stat-value" id="win-rate">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Best Streak</span>
+                    <span class="stat-value" id="best-streak">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/rps_game.js') }}"></script>
+
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .game-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .back-button {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .back-button:hover {
+        color: var(--text-light);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(-4px);
+    }
+
+    .game-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        background: var(--text-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .game-description {
+        font-size: 20px;
+        color: var(--text-muted);
+    }
+
+    .game-area {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 40px;
+        margin-bottom: 60px;
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 24px;
+        padding: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .player-side, .ai-side {
+        text-align: center;
+    }
+
+    .game-status {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .round-result {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-light);
+        text-align: center;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        min-width: 240px;
+    }
+
+    .camera-preview {
+        position: relative;
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+    }
+
+    #camera-feed, #gesture-canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    #gesture-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .camera-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.3s ease;
+    }
+
+    .camera-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .camera-status {
+        text-align: center;
+        color: white;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
+    }
+
+    .gesture-debug {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px;
+        font-size: 12px;
+        font-family: monospace;
+    }
+
+    .gesture-display {
+        margin: 20px 0;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+    }
+
+    .gesture-icon {
+        font-size: 48px;
+        margin-bottom: 8px;
+    }
+
+    .gesture-label {
+        font-size: 16px;
+        color: var(--text-muted);
+    }
+
+    .score {
+        font-size: 48px;
+        font-weight: 800;
+        color: var(--accent-purple);
+        margin: 20px 0;
+    }
+
+    .game-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 24px;
+        padding: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .instructions, .stats {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 24px;
+        border-radius: 12px;
+    }
+
+    .instructions h3, .stats h3 {
+        font-size: 24px;
+        margin-bottom: 16px;
+        color: var(--text-light);
+    }
+
+    .instructions ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .instructions li {
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .gesture-tips {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .gesture-tips h4 {
+        font-size: 18px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+    }
+
+    .gesture-tips ul {
+        list-style: disc;
+        padding-left: 20px;
+    }
+
+    .gesture-tips li {
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+    }
+
+    .stat-label {
+        display: block;
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        display: block;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-light);
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .game-area {
+            grid-template-columns: 1fr;
+        }
+        
+        .game-info {
+            grid-template-columns: 1fr;
+        }
+        
+        .game-status {
+            order: -1;
+            margin-bottom: 40px;
+        }
+    }
+</style>
+{% endblock %} 

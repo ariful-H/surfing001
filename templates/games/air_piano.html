@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block title %}Air Piano - QuantumGaze{% endblock %}
+
+{% block head %}
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .game-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .back-button {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .back-button:hover {
+        color: var(--text-light);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(-4px);
+    }
+
+    .piano-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .piano-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .piano-header h1 {
+        font-size: 2.5rem;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .piano-header p {
+        color: var(--text-color-secondary);
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    .game-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .camera-feed {
+        position: relative;
+        aspect-ratio: 16/9;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    #video-feed {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .piano-keyboard {
+        position: relative;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .piano-key {
+        position: relative;
+        height: 160px;
+        width: 40px;
+        background: white;
+        border-radius: 0 0 5px 5px;
+        cursor: pointer;
+        transition: all 0.1s ease;
+    }
+
+    .piano-key.black {
+        position: absolute;
+        height: 100px;
+        width: 24px;
+        background: #333;
+        z-index: 2;
+    }
+
+    .piano-key.active {
+        background: var(--primary-color);
+    }
+
+    .piano-key.black.active {
+        background: var(--primary-color-dark);
+    }
+
+    .controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .control-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        background: var(--primary-color);
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .control-btn:hover {
+        background: var(--primary-color-dark);
+        transform: translateY(-2px);
+    }
+
+    .sound-options {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .sound-option {
+        padding: 0.5rem 1rem;
+        border: 2px solid var(--primary-color);
+        border-radius: 20px;
+        color: var(--text-color);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .sound-option.active {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .debug-panel {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 2rem;
+        display: none;
+    }
+
+    .debug-panel.active {
+        display: block;
+    }
+
+    .debug-panel pre {
+        color: var(--text-color-secondary);
+        font-family: monospace;
+        white-space: pre-wrap;
+        margin: 0;
+    }
+
+    .hand-indicators {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+
+    .hand-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <a href="/games" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Games
+        </a>
+        <h1>Air Piano</h1>
+        <p>Play music in the air with your hand movements!</p>
+    </div>
+
+    <div class="piano-container">
+        <div class="controls">
+            <button id="startBtn" class="control-btn">
+                <i class="fas fa-play"></i>
+                Start
+            </button>
+            <button id="debugBtn" class="control-btn">
+                <i class="fas fa-bug"></i>
+                Toggle Debug
+            </button>
+        </div>
+
+        <div class="game-area">
+            <div class="camera-feed">
+                <video id="video-feed" playsinline></video>
+            </div>
+            <div class="piano-keyboard" id="piano">
+                <!-- Piano keys will be added dynamically -->
+            </div>
+        </div>
+
+        <div class="sound-options">
+            <div class="sound-option active" data-instrument="piano">Piano</div>
+            <div class="sound-option" data-instrument="synth">Synth</div>
+            <div class="sound-option" data-instrument="organ">Organ</div>
+        </div>
+
+        <div class="debug-panel" id="debugPanel">
+            <h3>Debug Information</h3>
+            <pre id="debugInfo"></pre>
+            <div class="hand-indicators">
+                <div class="hand-dot" id="leftHandDot"></div>
+                <div class="hand-dot" id="rightHandDot"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let ws = null;
+    let isPlaying = false;
+    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const octaves = [3, 4, 5];
+    let currentInstrument = 'piano';
+
+    // Initialize piano keyboard
+    function initPiano() {
+        const piano = document.getElementById('piano');
+        let whiteKeyIndex = 0;
+
+        octaves.forEach(octave => {
+            notes.forEach((note, index) => {
+                const key = document.createElement('div');
+                const isBlack = note.includes('#');
+                key.className = `piano-key ${isBlack ? 'black' : 'white'}`;
+                key.dataset.note = `${note}${octave}`;
+
+                if (isBlack) {
+                    key.style.left = `${whiteKeyIndex * 44 - 12}px`;
+                } else {
+                    key.style.left = `${whiteKeyIndex * 44}px`;
+                    whiteKeyIndex++;
+                }
+
+                piano.appendChild(key);
+            });
+        });
+    }
+
+    // Handle WebSocket connection
+    function connectWebSocket() {
+        ws = new WebSocket(`ws://${window.location.host}/gesture_stream/piano`);
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            updateDebugInfo(data);
+            handleGestures(data);
+        };
+
+        ws.onclose = () => {
+            if (isPlaying) {
+                setTimeout(connectWebSocket, 1000);
+            }
+        };
+    }
+
+    // Update debug information
+    function updateDebugInfo(data) {
+        if (document.getElementById('debugPanel').classList.contains('active')) {
+            document.getElementById('debugInfo').textContent = JSON.stringify(data, null, 2);
+            updateHandIndicators(data);
+        }
+    }
+
+    // Update hand position indicators
+    function updateHandIndicators(data) {
+        const leftDot = document.getElementById('leftHandDot');
+        const rightDot = document.getElementById('rightHandDot');
+
+        if (data.left_hand) {
+            leftDot.style.opacity = '1';
+            leftDot.style.transform = 'scale(1.2)';
+        } else {
+            leftDot.style.opacity = '0.3';
+            leftDot.style.transform = 'scale(1)';
+        }
+
+        if (data.right_hand) {
+            rightDot.style.opacity = '1';
+            rightDot.style.transform = 'scale(1.2)';
+        } else {
+            rightDot.style.opacity = '0.3';
+            rightDot.style.transform = 'scale(1)';
+        }
+    }
+
+    // Handle gesture data and trigger notes
+    function handleGestures(data) {
+        // Reset all keys
+        document.querySelectorAll('.piano-key').forEach(key => {
+            key.classList.remove('active');
+        });
+
+        // Activate keys based on hand positions
+        if (data.notes) {
+            data.notes.forEach(note => {
+                const key = document.querySelector(`.piano-key[data-note="${note}"]`);
+                if (key) {
+                    key.classList.add('active');
+                    playNote(note);
+                }
+            });
+        }
+    }
+
+    // Play a note using the Web Audio API
+    function playNote(note) {
+        // Implementation will depend on the Web Audio API setup
+        // This is a placeholder for the actual sound generation
+        console.log(`Playing note: ${note} with instrument: ${currentInstrument}`);
+    }
+
+    // Event Listeners
+    document.getElementById('startBtn').addEventListener('click', () => {
+        if (!isPlaying) {
+            isPlaying = true;
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-stop"></i> Stop';
+            connectWebSocket();
+        } else {
+            isPlaying = false;
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Start';
+            if (ws) ws.close();
+        }
+    });
+
+    document.getElementById('debugBtn').addEventListener('click', () => {
+        document.getElementById('debugPanel').classList.toggle('active');
+    });
+
+    document.querySelectorAll('.sound-option').forEach(option => {
+        option.addEventListener('click', () => {
+            document.querySelectorAll('.sound-option').forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+            currentInstrument = option.dataset.instrument;
+        });
+    });
+
+    // Initialize the piano keyboard on page load
+    initPiano();
+</script>
+{% endblock %}

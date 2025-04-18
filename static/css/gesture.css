@@ -1,0 +1,200 @@
+:root {
+    --primary-color: #4CAF50;
+    --background: #1a1a1a;
+    --card-bg: #2a2a2a;
+    --text-color: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    background: var(--background);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.video-container {
+    flex: 2;
+    position: relative;
+}
+
+.webcam-container {
+    flex: 1;
+    position: relative;
+}
+
+video {
+    width: 100%;
+    border-radius: 8px;
+    background: var(--card-bg);
+}
+
+.camera-preview-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 320px;
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.camera-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(30, 41, 59, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.camera-preview-title {
+    color: var(--text-light);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.camera-preview-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.camera-control-button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.camera-control-button:hover {
+    color: var(--text-light);
+}
+
+#processed-feed {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+#debug-info {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: rgba(30, 41, 59, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.camera-preview-container.minimized {
+    transform: scale(0.7);
+    transform-origin: bottom right;
+}
+
+.camera-preview-container.hidden {
+    display: none;
+}
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background: var(--primary-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.upload-section {
+    margin-top: 40px;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: 8px;
+}
+
+.gesture-controls {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: 8px;
+}
+
+.gesture-controls h3 {
+    margin-top: 0;
+    color: var(--text-color);
+}
+
+.gesture-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.gesture-list li {
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.gesture-list li:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(5px);
+}
+
+.gesture-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+input[type="file"] {
+    margin: 10px 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .video-container,
+    .webcam-container {
+        flex: 1;
+    }
+}

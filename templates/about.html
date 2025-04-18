@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}About - QuantumGaze{% endblock %}
+
+{% block content %}
+<div class="about-container">
+    <div class="hero-section">
+        <h1 class="hero-title">About QuantumGaze</h1>
+        <p class="hero-subtitle">Revolutionizing Human-Computer Interaction Through Gesture Control</p>
+    </div>
+
+    <div class="content-section">
+        <div class="mission-section">
+            <h2>Our Mission</h2>
+            <p>At QuantumGaze, we're pioneering the future of human-computer interaction by developing intuitive gesture-based control systems. Our platform combines cutting-edge computer vision technology with machine learning to create a seamless, hands-free computing experience.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-hand-paper"></i>
+                <h3>Gesture Recognition</h3>
+                <p>Advanced AI-powered gesture recognition system that accurately interprets hand movements in real-time.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-gamepad"></i>
+                <h3>Interactive Games</h3>
+                <p>A collection of engaging games designed specifically for gesture control, providing both entertainment and practice.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-brain"></i>
+                <h3>Machine Learning</h3>
+                <p>Continuous learning algorithms that adapt to your unique gesture patterns for improved accuracy over time.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-low-vision"></i>
+                <h3>Accessibility</h3>
+                <p>Making technology more accessible through intuitive gesture-based controls for users of all abilities.</p>
+            </div>
+        </div>
+
+        <div class="tech-stack">
+            <h2>Technology Stack</h2>
+            <div class="tech-icons">
+                <div class="tech-icon">
+                    <img src="{{ url_for('static', filename='images/python.svg') }}" alt="Python">
+                    <span>Python</span>
+                </div>
+                <div class="tech-icon">
+                    <img src="{{ url_for('static', filename='images/opencv.svg') }}" alt="OpenCV">
+                    <span>OpenCV</span>
+                </div>
+                <div class="tech-icon">
+                    <img src="{{ url_for('static', filename='images/tensorflow.svg') }}" alt="TensorFlow">
+                    <span>TensorFlow</span>
+                </div>
+                <div class="tech-icon">
+                    <img src="{{ url_for('static', filename='images/flask.svg') }}" alt="Flask">
+                    <span>Flask</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="creator-section">
+            <h2>Creator</h2>
+            <div class="creator-info">
+                <h3>Ariful Hussain</h3>
+                <p>Full Stack Developer</p>
+                <p>Built with passion and dedication to advancing human-computer interaction</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .about-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .hero-section {
+        text-align: center;
+        margin-bottom: 60px;
+        padding: 60px 0;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+        border-radius: 16px;
+    }
+
+    .hero-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        background: var(--text-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 20px;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .content-section {
+        display: flex;
+        flex-direction: column;
+        gap: 60px;
+    }
+
+    .mission-section {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .mission-section h2 {
+        font-size: 32px;
+        margin-bottom: 24px;
+        color: var(--text-light);
+    }
+
+    .mission-section p {
+        font-size: 18px;
+        line-height: 1.6;
+        color: var(--text-muted);
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin-top: 40px;
+    }
+
+    .feature-card {
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 16px;
+        padding: 32px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .feature-card i {
+        font-size: 36px;
+        margin-bottom: 16px;
+        background: var(--text-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .feature-card h3 {
+        font-size: 20px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+    }
+
+    .feature-card p {
+        font-size: 16px;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    .tech-stack {
+        text-align: center;
+    }
+
+    .tech-stack h2 {
+        font-size: 32px;
+        margin-bottom: 32px;
+        color: var(--text-light);
+    }
+
+    .tech-icons {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        flex-wrap: wrap;
+    }
+
+    .tech-icon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .tech-icon img {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+    }
+
+    .tech-icon span {
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .creator-section {
+        text-align: center;
+        padding: 40px;
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .creator-section h2 {
+        font-size: 32px;
+        margin-bottom: 24px;
+        color: var(--text-light);
+    }
+
+    .creator-info h3 {
+        font-size: 24px;
+        margin-bottom: 8px;
+        background: var(--text-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .creator-info p {
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    .creator-info p:first-of-type {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 36px;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tech-icons {
+            gap: 24px;
+        }
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+
+{% block title %}Gesture Pong - QuantumGaze{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-header">
+        <a href="{{ games_url }}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Games
+        </a>
+        <h1 class="game-title">Gesture Pong</h1>
+        <p class="game-description">Classic Pong with hand gesture controls!</p>
+    </div>
+
+    <div class="game-area">
+        <div class="game-canvas-container">
+            <canvas id="pongCanvas"></canvas>
+            <div class="camera-preview">
+                <video id="camera-feed" autoplay muted></video>
+                <div class="gesture-debug" id="debug-info"></div>
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <div class="score-display">
+                <div class="score-item">
+                    <span class="score-label">You</span>
+                    <span class="score-value" id="playerScore">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">AI</span>
+                    <span class="score-value" id="aiScore">0</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="start-game" class="control-button">
+                    <i class="fas fa-play"></i>
+                    Start Game
+                </button>
+                <button id="toggle-debug" class="control-button">
+                    <i class="fas fa-bug"></i>
+                    Toggle Debug
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-stats">
+        <div class="stat-panel">
+            <h3>Game Stats</h3>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Games Played</span>
+                    <span class="stat-value" id="gamesPlayed">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Win Rate</span>
+                    <span class="stat-value" id="winRate">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">High Score</span>
+                    <span class="stat-value" id="highScore">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="instructions-panel">
+            <h3>How to Play</h3>
+            <ul>
+                <li>👆 Move your hand up and down to control the paddle</li>
+                <li>🏓 Keep the ball in play and score points</li>
+                <li>🎯 First to 11 points wins!</li>
+                <li>⚡ Ball speed increases as rally continues</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .game-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .back-button {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .back-button:hover {
+        color: var(--text-light);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(-4px);
+    }
+
+    .game-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        background: var(--text-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .game-description {
+        font-size: 20px;
+        color: var(--text-muted);
+    }
+
+    .game-area {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 40px;
+        margin-bottom: 40px;
+    }
+
+    .game-canvas-container {
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 24px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    #pongCanvas {
+        width: 100%;
+        height: 400px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+    }
+
+    .camera-preview {
+        width: 320px;
+        height: 240px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        margin: 0 auto;
+    }
+
+    #camera-feed {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .gesture-debug {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: #4ecca3;
+        padding: 8px;
+        font-family: monospace;
+        font-size: 12px;
+        display: none;
+    }
+
+    .game-controls {
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 24px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .score-display {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 30px;
+    }
+
+    .score-item {
+        text-align: center;
+    }
+
+    .score-label {
+        display: block;
+        color: var(--text-muted);
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .score-value {
+        font-size: 48px;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .controls {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .control-button {
+        padding: 12px 24px;
+        border-radius: 50px;
+        border: none;
+        background: var(--primary-gradient);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .control-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .game-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+
+    .stat-panel, .instructions-panel {
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 24px;
+        padding: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-panel h3, .instructions-panel h3 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: var(--text-light);
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-label {
+        display: block;
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-light);
+    }
+
+    .instructions-panel ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .instructions-panel li {
+        margin-bottom: 15px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 16px;
+    }
+
+    @media (max-width: 1024px) {
+        .game-area {
+            grid-template-columns: 1fr;
+        }
+
+        .game-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .game-title {
+            font-size: 36px;
+        }
+
+        .camera-preview {
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .stat-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    class PongGame {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            
+            this.paddleHeight = 100;
+            this.paddleWidth = 10;
+            this.ballSize = 10;
+            
+            this.playerScore = 0;
+            this.aiScore = 0;
+            this.isRunning = false;
+            
+            this.setupCanvas();
+            this.resetBall();
+            this.resetPaddles();
+        }
+        
+        setupCanvas() {
+            this.canvas.width = this.canvas.offsetWidth;
+            this.canvas.height = this.canvas.offsetHeight;
+        }
+        
+        resetBall() {
+            this.ball = {
+                x: this.canvas.width / 2,
+                y: this.canvas.height / 2,
+                dx: 5,
+                dy: 3,
+                speed: 5
+            };
+        }
+        
+        resetPaddles() {
+            this.playerPaddle = {
+                x: 50,
+                y: this.canvas.height / 2 - this.paddleHeight / 2
+            };
+            
+            this.aiPaddle = {
+                x: this.canvas.width - 50 - this.paddleWidth,
+                y: this.canvas.height / 2 - this.paddleHeight / 2
+            };
+        }
+        
+        update(handPosition) {
+            if (!this.isRunning) return;
+            
+            // Update player paddle based on hand position
+            if (handPosition) {
+                const targetY = handPosition.y * this.canvas.height;
+                this.playerPaddle.y = Math.max(0, Math.min(this.canvas.height - this.paddleHeight, targetY - this.paddleHeight / 2));
+            }
+            
+            // Simple AI movement
+            const aiCenter = this.aiPaddle.y + this.paddleHeight / 2;
+            const ballCenter = this.ball.y;
+            const aiSpeed = 4;
+            
+            if (Math.abs(aiCenter - ballCenter) > aiSpeed) {
+                if (aiCenter < ballCenter) {
+                    this.aiPaddle.y += aiSpeed;
+                } else {
+                    this.aiPaddle.y -= aiSpeed;
+                }
+            }
+            
+            // Ball movement
+            this.ball.x += this.ball.dx;
+            this.ball.y += this.ball.dy;
+            
+            // Ball collision with top and bottom
+            if (this.ball.y <= 0 || this.ball.y >= this.canvas.height) {
+                this.ball.dy *= -1;
+            }
+            
+            // Ball collision with paddles
+            if (this.checkPaddleCollision(this.playerPaddle) || 
+                this.checkPaddleCollision(this.aiPaddle)) {
+                this.ball.dx *= -1.1; // Increase speed slightly
+                this.ball.dy *= 1.1;
+            }
+            
+            // Scoring
+            if (this.ball.x <= 0) {
+                this.aiScore++;
+                this.updateScore();
+                this.resetBall();
+            } else if (this.ball.x >= this.canvas.width) {
+                this.playerScore++;
+                this.updateScore();
+                this.resetBall();
+            }
+            
+            // Check for game end
+            if (this.playerScore >= 11 || this.aiScore >= 11) {
+                this.gameOver();
+            }
+        }
+        
+        checkPaddleCollision(paddle) {
+            return this.ball.x >= paddle.x && 
+                   this.ball.x <= paddle.x + this.paddleWidth &&
+                   this.ball.y >= paddle.y &&
+                   this.ball.y <= paddle.y + this.paddleHeight;
+        }
+        
+        draw() {
+            // Clear canvas
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw center line
+            this.ctx.setLineDash([5, 15]);
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.canvas.width / 2, 0);
+            this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            this.ctx.stroke();
+            this.ctx.setLineDash([]);
+            
+            // Draw paddles
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillRect(this.playerPaddle.x, this.playerPaddle.y, 
+                            this.paddleWidth, this.paddleHeight);
+            this.ctx.fillRect(this.aiPaddle.x, this.aiPaddle.y, 
+                            this.paddleWidth, this.paddleHeight);
+            
+            // Draw ball
+            this.ctx.beginPath();
+            this.ctx.arc(this.ball.x, this.ball.y, this.ballSize, 0, Math.PI * 2);
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fill();
+        }
+        
+        start() {
+            this.isRunning = true;
+            this.resetBall();
+            this.resetPaddles();
+        }
+        
+        stop() {
+            this.isRunning = false;
+        }
+        
+        updateScore() {
+            document.getElementById('playerScore').textContent = this.playerScore;
+            document.getElementById('aiScore').textContent = this.aiScore;
+        }
+        
+        gameOver() {
+            this.stop();
+            const gamesPlayed = parseInt(localStorage.getItem('pongGamesPlayed') || '0') + 1;
+            const wins = parseInt(localStorage.getItem('pongWins') || '0') + (this.playerScore > this.aiScore ? 1 : 0);
+            const highScore = Math.max(parseInt(localStorage.getItem('pongHighScore') || '0'), this.playerScore);
+            
+            localStorage.setItem('pongGamesPlayed', gamesPlayed);
+            localStorage.setItem('pongWins', wins);
+            localStorage.setItem('pongHighScore', highScore);
+            
+            this.updateStats();
+        }
+        
+        updateStats() {
+            const gamesPlayed = parseInt(localStorage.getItem('pongGamesPlayed') || '0');
+            const wins = parseInt(localStorage.getItem('pongWins') || '0');
+            const highScore = parseInt(localStorage.getItem('pongHighScore') || '0');
+            
+            document.getElementById('gamesPlayed').textContent = gamesPlayed;
+            document.getElementById('winRate').textContent = 
+                gamesPlayed > 0 ? Math.round((wins / gamesPlayed) * 100) + '%' : '0%';
+            document.getElementById('highScore').textContent = highScore;
+        }
+    }
+
+    // Initialize game
+    document.addEventListener('DOMContentLoaded', async () => {
+        const canvas = document.getElementById('pongCanvas');
+        const game = new PongGame(canvas);
+        let debugMode = false;
+
+        // Setup camera
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('camera-feed').srcObject = stream;
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+        }
+
+        // Connect to WebSocket for hand tracking
+        const ws = new WebSocket(`ws://${window.location.host}/gesture_stream/pong`);
+        
+        ws.onmessage = (event) => {
+            if (!game.isRunning) return;
+            
+            const data = JSON.parse(event.data);
+            if (debugMode) {
+                document.getElementById('debug-info').textContent = JSON.stringify(data, null, 2);
+            }
+
+            if (data.hand_position) {
+                game.update(data.hand_position);
+            }
+        };
+
+        // Game loop
+        function gameLoop() {
+            game.draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+
+        // Event listeners
+        document.getElementById('start-game').addEventListener('click', () => {
+            if (game.isRunning) {
+                game.stop();
+                document.getElementById('start-game').innerHTML = '<i class="fas fa-play"></i> Start Game';
+            } else {
+                game.start();
+                document.getElementById('start-game').innerHTML = '<i class="fas fa-stop"></i> Stop Game';
+            }
+        });
+
+        document.getElementById('toggle-debug').addEventListener('click', () => {
+            debugMode = !debugMode;
+            document.getElementById('debug-info').style.display = debugMode ? 'block' : 'none';
+        });
+
+        // Load initial stats
+        game.updateStats();
+    });
+</script>
+{% endblock %} 

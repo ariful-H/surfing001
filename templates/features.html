@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Features - QuantumGaze{% endblock %}
+
+{% block content %}
+<div class="features-container">
+    <div class="hero-section">
+        <h1 class="hero-title">Platform Features</h1>
+        <p class="hero-subtitle">Discover the power of gesture-based interaction</p>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-section">
+            <div class="feature-header">
+                <i class="fas fa-hand-paper"></i>
+                <h2>Advanced Gesture Recognition</h2>
+            </div>
+            <div class="feature-content">
+                <ul>
+                    <li>Real-time hand tracking and landmark detection</li>
+                    <li>Multi-hand support for interactive experiences</li>
+                    <li>Precise finger tracking for detailed gestures</li>
+                    <li>Low-latency processing for smooth interaction</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-header">
+                <i class="fas fa-brain"></i>
+                <h2>AI-Powered Analysis</h2>
+            </div>
+            <div class="feature-content">
+                <ul>
+                    <li>Machine learning models for gesture classification</li>
+                    <li>Adaptive learning for improved accuracy</li>
+                    <li>Custom gesture training capabilities</li>
+                    <li>Real-time pose estimation and tracking</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-header">
+                <i class="fas fa-gamepad"></i>
+                <h2>Interactive Gaming</h2>
+            </div>
+            <div class="feature-content">
+                <ul>
+                    <li>Gesture-controlled classic games</li>
+                    <li>Educational games for learning</li>
+                    <li>Multiplayer support</li>
+                    <li>Real-time score tracking</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-header">
+                <i class="fas fa-video"></i>
+                <h2>Media Control</h2>
+            </div>
+            <div class="feature-content">
+                <ul>
+                    <li>Hands-free video playback control</li>
+                    <li>Volume and timeline gesture control</li>
+                    <li>Custom gesture mappings</li>
+                    <li>Multi-device support</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="tech-section">
+        <h2>Technical Specifications</h2>
+        <div class="tech-details">
+            <div class="tech-item">
+                <h3>Performance</h3>
+                <ul>
+                    <li>30+ FPS gesture tracking</li>
+                    <li>Low latency response (< 100ms)</li>
+                    <li>Optimized for modern browsers</li>
+                    <li>Efficient resource usage</li>
+                </ul>
+            </div>
+
+            <div class="tech-item">
+                <h3>Compatibility</h3>
+                <ul>
+                    <li>Works on desktop and mobile</li>
+                    <li>Support for major browsers</li>
+                    <li>WebRTC enabled cameras</li>
+                    <li>Progressive Web App support</li>
+                </ul>
+            </div>
+
+            <div class="tech-item">
+                <h3>Security</h3>
+                <ul>
+                    <li>Local processing of gestures</li>
+                    <li>No data storage of video feed</li>
+                    <li>HTTPS encryption</li>
+                    <li>Privacy-focused design</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .features-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .hero-section {
+        text-align: center;
+        margin-bottom: 60px;
+        padding: 60px 0;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+        border-radius: 16px;
+    }
+
+    .hero-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        background: var(--text-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 20px;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 32px;
+        margin-bottom: 60px;
+    }
+
+    .feature-section {
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 16px;
+        padding: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .feature-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .feature-header i {
+        font-size: 24px;
+        width: 48px;
+        height: 48px;
+        background: var(--primary-gradient);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .feature-header h2 {
+        font-size: 24px;
+        color: var(--text-light);
+        margin: 0;
+    }
+
+    .feature-content ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .feature-content li {
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        padding-left: 24px;
+        position: relative;
+    }
+
+    .feature-content li::before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: var(--accent-purple);
+    }
+
+    .tech-section {
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 16px;
+        padding: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tech-section h2 {
+        font-size: 32px;
+        color: var(--text-light);
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .tech-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 32px;
+    }
+
+    .tech-item {
+        padding: 24px;
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 12px;
+    }
+
+    .tech-item h3 {
+        font-size: 20px;
+        color: var(--text-light);
+        margin-bottom: 16px;
+    }
+
+    .tech-item ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tech-item li {
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+    }
+
+    .tech-item li::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: var(--accent-purple);
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 36px;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tech-details {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %} 
